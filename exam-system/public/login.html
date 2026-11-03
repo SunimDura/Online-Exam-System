@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ExamPortal — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#070a12;--surface:#0f1420;--border:#1a2236;--accent:#4f8ef7;--purple:#7c3aed;--text:#e8ecf5;--muted:#5a6480;--success:#22c55e;--danger:#ef4444}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,142,247,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.03) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+.blob{position:fixed;border-radius:50%;filter:blur(120px);opacity:.1;pointer-events:none}
+.b1{width:600px;height:600px;background:var(--accent);top:-200px;left:-200px;animation:fl 10s ease-in-out infinite alternate}
+.b2{width:500px;height:500px;background:var(--purple);bottom:-150px;right:-150px;animation:fl 10s ease-in-out infinite alternate;animation-delay:3s}
+@keyframes fl{from{transform:translate(0,0)}to{transform:translate(40px,40px)}}
+.wrap{position:relative;z-index:10;width:100%;max-width:420px;padding:0 20px}
+.logo{text-align:center;margin-bottom:36px}
+.logo-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:18px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:14px;box-shadow:0 0 50px rgba(79,142,247,.25)}
+.logo h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:800}
+.logo h1 span{color:var(--accent)}
+.logo p{color:var(--muted);font-size:13px;margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:32px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.tabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:28px}
+.tab{flex:1;padding:10px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border-radius:8px;cursor:pointer;transition:all .2s}
+.tab.on{background:var(--surface);color:var(--text);box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.form{display:none}.form.on{display:block}
+.ftitle{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;margin-bottom:4px}
+.fsub{color:var(--muted);font-size:13px;margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.field input{width:100%;padding:13px 15px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,.1)}
+.field input::placeholder{color:var(--muted)}
+.btn-main{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--purple));border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;margin-top:6px}
+.btn-main:hover{opacity:.9}.btn-main:active{transform:scale(.98)}.btn-main:disabled{opacity:.5;cursor:not-allowed}
+.alert{padding:11px 14px;border-radius:9px;font-size:13px;margin-bottom:18px;display:none}
+.alert.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5;display:block}
+.alert.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#86efac;display:block}
+.demo{margin-top:20px;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--muted)}
+.demo strong{color:var(--text);display:block;margin-bottom:8px;font-size:13px}
+.dcred{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+.dcred code{background:var(--surface);padding:3px 8px;border-radius:5px;color:var(--accent);cursor:pointer;font-size:11px;transition:background .2s}
+.dcred code:hover{background:var(--border)}
+</style>
+</head>
+<body>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="wrap">
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <h1>Exam<span>Portal</span></h1>
+    <p>Online Examination System</p>
+  </div>
+  <div class="card">
+    <div class="tabs">
+      <button class="tab on" id="t1" onclick="tab('login')">Sign In</button>
+      <button class="tab"    id="t2" onclick="tab('reg')">Register</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="form on" id="fLogin">
+      <div class="ftitle">Welcome back</div>
+      <div class="fsub">Sign in to access your exams</div>
+      <div class="alert" id="aLogin"></div>
+      <div class="field"><label>Email</label><input type="email" id="lEmail" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input type="password" id="lPass" placeholder="Enter password"/></div>
+      <button class="btn-main" id="btnLogin" onclick="doLogin()">Sign In →</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="form" id="fReg">
+      <div class="ftitle">Create account</div>
+      <div class="fsub">Register as a new student</div>
+      <div class="alert" id="aReg"></div>
+      <div class="field"><label>Full Name</label><input type="text" id="rName" placeholder="Your full name"/></div>
+      <div class="field"><label>Email</label><input type="email" id="rEmail" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input type="password" id="rPass" placeholder="Min 6 characters"/></div>
+      <button class="btn-main" id="btnReg" onclick="doReg()">Create Account →</button>
+    </div>
+
+    <div class="demo">
+      <strong>🔑 Demo Admin Credentials</strong>
+      <div class="dcred"><span>Email:</span><code onclick="fill('email')">admin@exam.com</code></div>
+      <div class="dcred"><span>Password:</span><code onclick="fill('pass')">admin123</code></div>
+    </div>
+  </div>
+</div>
+<script>
+const API='';
+function tab(t){
+  document.getElementById('fLogin').classList.toggle('on',t==='login');
+  document.getElementById('fReg').classList.toggle('on',t==='reg');
+  document.getElementById('t1').classList.toggle('on',t==='login');
+  document.getElementById('t2').classList.toggle('on',t==='reg');
+}
+function alert2(id,msg,type){const e=document.getElementById(id);e.textContent=msg;e.className='alert '+(type==='ok'?'ok':'err')}
+function fill(f){if(f==='email')document.getElementById('lEmail').value='admin@exam.com';else document.getElementById('lPass').value='admin123'}
+
+async function doLogin(){
+  const email=document.getElementById('lEmail').value.trim();
+  const pass=document.getElementById('lPass').value;
+  const btn=document.getElementById('btnLogin');
+  if(!email||!pass)return alert2('aLogin','Please fill in all fields.','err');
+  btn.disabled=true;btn.textContent='Signing in...';
+  try{
+    const r=await fetch(`${API}/api/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const d=await r.json();
+    if(!d.success){alert2('aLogin',d.message,'err');btn.disabled=false;btn.textContent='Sign In →';return}
+    localStorage.setItem('token',d.data.token);
+    localStorage.setItem('user',JSON.stringify(d.data.user));
+    alert2('aLogin','Login successful! Redirecting...','ok');
+    setTimeout(()=>{window.location.href=d.data.user.role==='admin'?'/admin.html':'/exam.html'},700);
+  }catch(e){alert2('aLogin','Cannot connect to server. Is it running?','err');btn.disabled=false;btn.textContent='Sign In →'}
+}
+
+async function doReg(){
+  const name=document.getElementById('rName').value.trim();
+  const email=document.getElementById('rEmail').value.trim();
+  const pass=document.getElementById('rPass').value;
+  const btn=document.getElementById('btnReg');
+  if(!name||!email||!pass)return alert2('aReg','All fields are required.','err');
+  if(pass.length<6)return alert2('aReg','Password must be at least 6 characters.','err');
+  btn.disabled=true;btn.textContent='Creating...';
+  try{
+    const r=await fetch(`${API}/api/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pass})});
+    const d=await r.json();
+    if(!d.success){alert2('aReg',d.message,'err');btn.disabled=false;btn.textContent='Create Account →';return}
+    alert2('aReg','Account created! Please sign in.','ok');
+    setTimeout(()=>tab('login'),1200);
+    btn.disabled=false;btn.textContent='Create Account →';
+  }catch(e){alert2('aReg','Cannot connect to server.','err');btn.disabled=false;btn.textContent='Create Account →'}
+}
+
+document.addEventListener('keypress',e=>{if(e.key==='Enter'){if(document.getElementById('fLogin').classList.contains('on'))doLogin();else doReg()}});
+const u=localStorage.getItem('user');
+if(u){const p=JSON.parse(u);window.location.href=p.role==='admin'?'/admin.html':'/exam.html'}
+</script>
+</body>
+</html>

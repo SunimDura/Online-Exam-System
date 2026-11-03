@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ExamPortal — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#070a12;--surface:#0f1420;--s2:#131929;--border:#1a2236;--accent:#4f8ef7;--purple:#7c3aed;--text:#e8ecf5;--muted:#5a6480;--success:#22c55e;--danger:#ef4444;--warn:#f59e0b;--sw:255px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;min-height:100vh}
+/* SIDEBAR */
+.sb{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);position:fixed;height:100vh;display:flex;flex-direction:column;z-index:100}
+.sb-logo{padding:24px 20px;border-bottom:1px solid var(--border)}
+.sb-logo h2{font-family:'Syne',sans-serif;font-size:19px;font-weight:800}.sb-logo h2 span{color:var(--accent)}
+.sb-logo p{color:var(--muted);font-size:11px;margin-top:2px}
+.nav{padding:14px 10px;flex:1;overflow-y:auto}
+.ni{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;transition:all .15s;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left}
+.ni:hover{background:var(--s2);color:var(--text)}
+.ni.on{background:rgba(79,142,247,.12);color:var(--accent)}
+.ni .ic{font-size:17px;width:22px;text-align:center}
+.sb-user{padding:16px 18px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.av{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.sb-uinfo .uname{font-size:13px;font-weight:600}.sb-uinfo .urole{font-size:11px;color:var(--muted)}
+.sb-lout{margin-left:auto;background:none;border:none;color:var(--muted);font-size:19px;cursor:pointer;transition:color .15s}.sb-lout:hover{color:var(--danger)}
+/* MAIN */
+.main{margin-left:var(--sw);flex:1;padding:30px;overflow-y:auto}
+.panel{display:none}.panel.on{display:block}
+.ph{margin-bottom:24px}.ph h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800}.ph p{color:var(--muted);font-size:13px;margin-top:3px}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:18px}
+.sc .slabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.sc .sval{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;margin:7px 0 3px}
+.sc .ssub{font-size:11px;color:var(--muted)}
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:22px;margin-bottom:22px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.ctitle{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+/* Buttons */
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;transition:opacity .15s}
+.btn:hover{opacity:.8}.btn-p{background:var(--accent);color:#fff}.btn-d{background:var(--danger);color:#fff}.btn-w{background:var(--warn);color:#000}.btn-g{background:var(--s2);color:var(--text);border:1px solid var(--border)}.btn-sm{padding:6px 11px;font-size:12px}
+/* Forms */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{min-height:75px}
+/* Alert */
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+.alert.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5;display:block}
+.alert.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#86efac;display:block}
+/* Tables */
+table{width:100%;border-collapse:collapse}
+th,td{padding:11px 13px;text-align:left;font-size:13px}
+th{color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+td{border-bottom:1px solid rgba(26,34,54,.4)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+/* Badge */
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.bg{background:rgba(34,197,94,.12);color:#86efac}.br{background:rgba(239,68,68,.12);color:#fca5a5}.bb{background:rgba(79,142,247,.12);color:#93c5fd}.by{background:rgba(245,158,11,.12);color:#fcd34d}
+/* Questions */
+.qi{background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:16px;margin-bottom:11px}
+.qtext-disp{font-size:14px;font-weight:500;margin-bottom:11px}
+.ogrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.oitem{padding:8px 11px;border-radius:7px;font-size:12px;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.oitem.cor{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.25);color:#86efac}
+.ol{font-weight:700;color:var(--muted)}.oitem.cor .ol{color:#86efac}
+/* Modal */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:999}
+.moverlay.on{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;width:100%;max-width:540px;max-height:85vh;overflow-y:auto}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.mh h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.mclose{background:none;border:none;color:var(--muted);font-size:21px;cursor:pointer}.mclose:hover{color:var(--text)}
+</style>
+</head>
+<body>
+
+<aside class="sb">
+  <div class="sb-logo">
+    <h2>Exam<span>Portal</span></h2>
+    <p>Administrator Dashboard</p>
+  </div>
+  <nav class="nav">
+    <button class="ni on" id="n-dash"     onclick="goto('dash',this)"><span class="ic">📊</span>Dashboard</button>
+    <button class="ni"    id="n-exams"    onclick="goto('exams',this)"><span class="ic">📋</span>Manage Exams</button>
+    <button class="ni"    id="n-questions"onclick="goto('questions',this)"><span class="ic">❓</span>Questions</button>
+    <button class="ni"    id="n-results"  onclick="goto('results',this)"><span class="ic">📈</span>All Results</button>
+  </nav>
+  <div class="sb-user">
+    <div class="av" id="sbAv">A</div>
+    <div class="sb-uinfo"><div class="uname" id="sbName">Admin</div><div class="urole">Administrator</div></div>
+    <button class="sb-lout" onclick="logout()" title="Logout">⏻</button>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="panel on" id="p-dash">
+    <div class="ph"><h1>Dashboard</h1><p>System overview</p></div>
+    <div class="stats">
+      <div class="sc"><div class="slabel">Total Exams</div><div class="sval" id="stExams">—</div><div class="ssub">Created</div></div>
+      <div class="sc"><div class="slabel">Questions</div><div class="sval" id="stQ">—</div><div class="ssub">Across all exams</div></div>
+      <div class="sc"><div class="slabel">Submissions</div><div class="sval" id="stRes">—</div><div class="ssub">Total attempts</div></div>
+      <div class="sc"><div class="slabel">Pass Rate</div><div class="sval" id="stPass">—</div><div class="ssub">Of all attempts</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ctitle">Recent Submissions</div><button class="btn btn-g btn-sm" onclick="goto('results',document.getElementById('n-results'))">View All</button></div>
+      <table><thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Grade</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="recentTb"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px">Loading...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- EXAMS -->
+  <div class="panel" id="p-exams">
+    <div class="ph"><h1>Manage Exams</h1><p>Create and control exams</p></div>
+    <div class="card">
+      <div class="ch"><div class="ctitle">➕ Create Exam</div></div>
+      <div id="examAlert"></div>
+      <div class="frow">
+        <div class="field"><label>Exam Title</label><input type="text" id="eTitle" placeholder="e.g. Python Basics"/></div>
+        <div class="field"><label>Duration (minutes)</label><input type="number" id="eDur" value="30"/></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Pass Percentage (%)</label><input type="number" id="ePass" value="50" min="1" max="100"/></div>
+        <div class="field"><label>Description</label><input type="text" id="eDesc" placeholder="Brief description"/></div>
+      </div>
+      <button class="btn btn-p" onclick="createExam()">Create Exam</button>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ctitle">All Exams</div><button class="btn btn-g btn-sm" onclick="loadExams()">↻ Refresh</button></div>
+      <table><thead><tr><th>Title</th><th>Questions</th><th>Duration</th><th>Marks</th><th>Pass%</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="examsTb"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Loading...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- QUESTIONS -->
+  <div class="panel" id="p-questions">
+    <div class="ph"><h1>Questions</h1><p>Add MCQ questions to exams</p></div>
+    <div class="card">
+      <div class="ch"><div class="ctitle">➕ Add Question</div></div>
+      <div id="qAlert"></div>
+      <div class="field"><label>Select Exam</label>
+        <select id="qExam" onchange="loadQsByExam()"><option value="">— Choose exam —</option></select>
+      </div>
+      <div class="field"><label>Question Text</label><textarea id="qText" placeholder="Enter the question..."></textarea></div>
+      <div class="frow">
+        <div class="field"><label>Option A</label><input type="text" id="qA" placeholder="Option A"/></div>
+        <div class="field"><label>Option B</label><input type="text" id="qB" placeholder="Option B"/></div>
+        <div class="field"><label>Option C</label><input type="text" id="qC" placeholder="Option C"/></div>
+        <div class="field"><label>Option D</label><input type="text" id="qD" placeholder="Option D"/></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Correct Answer</label>
+          <select id="qCorrect"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+        </div>
+        <div class="field"><label>Marks</label><input type="number" id="qMarks" value="1" min="1"/></div>
+      </div>
+      <button class="btn btn-p" onclick="addQuestion()">Add Question</button>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ctitle">Questions List</div><span id="qCount" style="color:var(--muted);font-size:13px"></span></div>
+      <div id="qList"><p style="color:var(--muted);text-align:center;padding:24px">Select an exam above.</p></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="panel" id="p-results">
+    <div class="ph"><h1>All Results</h1><p>Student submissions across all exams</p></div>
+    <div class="card">
+      <div class="ch"><div class="ctitle">Submission Records</div><button class="btn btn-g btn-sm" onclick="loadResults()">↻ Refresh</button></div>
+      <table><thead><tr><th>Student</th><th>Email</th><th>Exam</th><th>Score</th><th>%</th><th>Grade</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="resultsTb"><tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px">Loading...</td></tr></tbody></table>
+    </div>
+  </div>
+
+</main>
+
+<!-- EDIT EXAM MODAL -->
+<div class="moverlay" id="editModal">
+  <div class="modal">
+    <div class="mh"><h3>Edit Exam</h3><button class="mclose" onclick="closeModal()">✕</button></div>
+    <input type="hidden" id="editId"/>
+    <div class="field"><label>Title</label><input type="text" id="editTitle"/></div>
+    <div class="frow">
+      <div class="field"><label>Duration (min)</label><input type="number" id="editDur"/></div>
+      <div class="field"><label>Pass % </label><input type="number" id="editPass" min="1" max="100"/></div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="editDesc"></textarea></div>
+    <button class="btn btn-p" onclick="saveEdit()">Save Changes</button>
+  </div>
+</div>
+
+<script>
+const API='';
+const token=localStorage.getItem('token');
+const user=JSON.parse(localStorage.getItem('user')||'{}');
+if(!token||user.role!=='admin')window.location.href='/login.html';
+document.getElementById('sbName').textContent=user.name||'Admin';
+document.getElementById('sbAv').textContent=(user.name||'A')[0].toUpperCase();
+const H={'Content-Type':'application/json','Authorization':'Bearer '+token};
+
+function logout(){localStorage.clear();window.location.href='/login.html'}
+function goto(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('p-'+name).classList.add('on');
+  btn.classList.add('on');
+  if(name==='dash')loadDash();
+  if(name==='exams')loadExams();
+  if(name==='results')loadResults();
+  if(name==='questions')loadExamDropdown();
+}
+function gradeClass(pct){if(pct>=90)return'A+';if(pct>=80)return'A';if(pct>=70)return'B';if(pct>=60)return'C';if(pct>=50)return'D';return'F'}
+
+// DASHBOARD
+async function loadDash(){
+  const[eR,rR]=await Promise.all([fetch(`${API}/api/exams/all`,{headers:H}),fetch(`${API}/api/results/all`,{headers:H})]);
+  const eD=await eR.json(),rD=await rR.json();
+  const exams=eD.data||[],results=rD.data||[];
+  document.getElementById('stExams').textContent=exams.length;
+  document.getElementById('stQ').textContent=exams.reduce((s,e)=>s+(e.question_count||0),0);
+  document.getElementById('stRes').textContent=results.length;
+  const passed=results.filter(r=>r.passed).length;
+  document.getElementById('stPass').textContent=results.length?Math.round(passed/results.length*100)+'%':'—';
+  document.getElementById('recentTb').innerHTML=results.slice(0,8).map(r=>`
+    <tr>
+      <td><strong>${r.student_name}</strong></td>
+      <td>${r.exam_title}</td>
+      <td>${r.score}/${r.total_marks}</td>
+      <td><span class="badge bb">${gradeClass(r.percentage)}</span></td>
+      <td><span class="badge ${r.passed?'bg':'br'}">${r.passed?'Pass':'Fail'}</span></td>
+      <td style="color:var(--muted)">${new Date(r.submitted_at).toLocaleDateString()}</td>
+    </tr>`).join('')||'<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px">No submissions yet.</td></tr>';
+}
+
+// EXAMS
+async function loadExams(){
+  const r=await fetch(`${API}/api/exams/all`,{headers:H});const d=await r.json();
+  document.getElementById('examsTb').innerHTML=(d.data||[]).map(e=>`
+    <tr>
+      <td><strong>${e.title}</strong></td>
+      <td>${e.question_count}</td>
+      <td>${e.duration_mins}m</td>
+      <td>${e.total_marks} pts</td>
+      <td>${e.pass_percent}%</td>
+      <td><span class="badge ${e.is_active?'bg':'br'}">${e.is_active?'Active':'Inactive'}</span></td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-g btn-sm" onclick="openEdit(${e.id},'${e.title.replace(/'/g,"\\'")}',${e.duration_mins},${e.pass_percent},'${(e.description||'').replace(/'/g,"\\'")}')">Edit</button>
+        <button class="btn btn-w btn-sm" onclick="toggleExam(${e.id})">Toggle</button>
+        <button class="btn btn-d btn-sm" onclick="delExam(${e.id})">Delete</button>
+      </td>
+    </tr>`).join('')||'<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">No exams yet.</td></tr>';
+}
+async function createExam(){
+  const title=document.getElementById('eTitle').value.trim();
+  const dur=document.getElementById('eDur').value;
+  const pass=document.getElementById('ePass').value;
+  const desc=document.getElementById('eDesc').value.trim();
+  const al=document.getElementById('examAlert');
+  if(!title){al.className='alert err';al.textContent='Title is required.';return}
+  const r=await fetch(`${API}/api/exams`,{method:'POST',headers:H,body:JSON.stringify({title,duration_mins:dur,pass_percent:pass,description:desc})});
+  const d=await r.json();
+  if(d.success){al.className='alert ok';al.textContent='Exam created!';['eTitle','eDesc'].forEach(id=>document.getElementById(id).value='');loadExams()}
+  else{al.className='alert err';al.textContent=d.message}
+}
+async function delExam(id){if(!confirm('Delete exam? All questions and results will be deleted.'))return;await fetch(`${API}/api/exams/${id}`,{method:'DELETE',headers:H});loadExams()}
+async function toggleExam(id){await fetch(`${API}/api/exams/${id}/toggle`,{method:'PATCH',headers:H});loadExams()}
+function openEdit(id,title,dur,pass,desc){
+  document.getElementById('editId').value=id;document.getElementById('editTitle').value=title;
+  document.getElementById('editDur').value=dur;document.getElementById('editPass').value=pass;
+  document.getElementById('editDesc').value=desc;
+  document.getElementById('editModal').classList.add('on');
+}
+function closeModal(){document.getElementById('editModal').classList.remove('on')}
+async function saveEdit(){
+  const id=document.getElementById('editId').value;
+  await fetch(`${API}/api/exams/${id}`,{method:'PUT',headers:H,body:JSON.stringify({title:document.getElementById('editTitle').value,duration_mins:document.getElementById('editDur').value,pass_percent:document.getElementById('editPass').value,description:document.getElementById('editDesc').value})});
+  closeModal();loadExams();
+}
+
+// QUESTIONS
+async function loadExamDropdown(){
+  const r=await fetch(`${API}/api/exams/all`,{headers:H});const d=await r.json();
+  document.getElementById('qExam').innerHTML='<option value="">— Choose exam —</option>'+(d.data||[]).map(e=>`<option value="${e.id}">${e.title}</option>`).join('');
+}
+async function loadQsByExam(){
+  const id=document.getElementById('qExam').value;if(!id)return;
+  const r=await fetch(`${API}/api/questions/exam/${id}`,{headers:H});const d=await r.json();
+  const qs=d.data||[];
+  document.getElementById('qCount').textContent=qs.length+' question(s)';
+  document.getElementById('qList').innerHTML=qs.length===0?'<p style="color:var(--muted);text-align:center;padding:20px">No questions yet.</p>':
+  qs.map((q,i)=>`<div class="qi">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div class="qtext-disp">Q${i+1}. ${q.question_text}</div>
+      <button class="btn btn-d btn-sm" style="flex-shrink:0;margin-left:12px" onclick="delQ(${q.id})">Delete</button>
+    </div>
+    <div class="ogrid">
+      <div class="oitem ${q.correct_option==='A'?'cor':''}"><span class="ol">A.</span>${q.option_a}</div>
+      <div class="oitem ${q.correct_option==='B'?'cor':''}"><span class="ol">B.</span>${q.option_b}</div>
+      <div class="oitem ${q.correct_option==='C'?'cor':''}"><span class="ol">C.</span>${q.option_c}</div>
+      <div class="oitem ${q.correct_option==='D'?'cor':''}"><span class="ol">D.</span>${q.option_d}</div>
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:var(--muted)">${q.marks} mark(s) · Correct: <strong style="color:#86efac">${q.correct_option}</strong></div>
+  </div>`).join('');
+}
+async function addQuestion(){
+  const exam_id=document.getElementById('qExam').value;
+  const question_text=document.getElementById('qText').value.trim();
+  const option_a=document.getElementById('qA').value.trim();
+  const option_b=document.getElementById('qB').value.trim();
+  const option_c=document.getElementById('qC').value.trim();
+  const option_d=document.getElementById('qD').value.trim();
+  const correct_option=document.getElementById('qCorrect').value;
+  const marks=document.getElementById('qMarks').value;
+  const al=document.getElementById('qAlert');
+  if(!exam_id||!question_text||!option_a||!option_b||!option_c||!option_d){al.className='alert err';al.textContent='All fields required.';return}
+  const r=await fetch(`${API}/api/questions`,{method:'POST',headers:H,body:JSON.stringify({exam_id,question_text,option_a,option_b,option_c,option_d,correct_option,marks})});
+  const d=await r.json();
+  if(d.success){al.className='alert ok';al.textContent='Question added!';['qText','qA','qB','qC','qD'].forEach(id=>document.getElementById(id).value='');document.getElementById('qMarks').value='1';loadQsByExam()}
+  else{al.className='alert err';al.textContent=d.message}
+}
+async function delQ(id){if(!confirm('Delete this question?'))return;await fetch(`${API}/api/questions/${id}`,{method:'DELETE',headers:H});loadQsByExam()}
+
+// RESULTS
+async function loadResults(){
+  const r=await fetch(`${API}/api/results/all`,{headers:H});const d=await r.json();
+  document.getElementById('resultsTb').innerHTML=(d.data||[]).map(r=>{
+    const g=gradeClass(r.percentage);
+    return`<tr>
+      <td><strong>${r.student_name}</strong></td>
+      <td style="color:var(--muted)">${r.student_email}</td>
+      <td>${r.exam_title}</td>
+      <td>${r.score}/${r.total_marks}</td>
+      <td>${r.percentage}%</td>
+      <td><span class="badge bb">${g}</span></td>
+      <td><span class="badge ${r.passed?'bg':'br'}">${r.passed?'Pass':'Fail'}</span></td>
+      <td style="color:var(--muted)">${new Date(r.submitted_at).toLocaleDateString()}</td>
+    </tr>`}).join('')||'<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px">No results yet.</td></tr>';
+}
+
+loadDash();
+</script>
+</body>
+</html>

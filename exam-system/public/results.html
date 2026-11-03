@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ExamPortal — My Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#070a12;--surface:#0f1420;--s2:#131929;--border:#1a2236;--accent:#4f8ef7;--purple:#7c3aed;--text:#e8ecf5;--muted:#5a6480;--success:#22c55e;--danger:#ef4444}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}.logo span{color:var(--accent)}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;transition:opacity .15s;text-decoration:none;display:inline-block}
+.btn:hover{opacity:.8}.btn-g{background:var(--s2);color:var(--text);border:1px solid var(--border)}
+.page{max-width:900px;margin:0 auto;padding:40px 24px}
+.ptitle{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:6px}
+.psub{color:var(--muted);margin-bottom:30px;font-size:14px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:18px}
+.slabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.sval{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-top:7px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:22px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:13px 14px;text-align:left;font-size:13px}
+th{color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+td{border-bottom:1px solid rgba(26,34,54,.4)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.bg{background:rgba(34,197,94,.12);color:#86efac}.br{background:rgba(239,68,68,.12);color:#fca5a5}.bb{background:rgba(79,142,247,.12);color:#93c5fd}
+.bar-wrap{display:flex;align-items:center;gap:8px}
+.bar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;min-width:70px}
+.barf{height:100%;border-radius:3px}.barf.p{background:var(--success)}.barf.f{background:var(--danger)}
+.empty{text-align:center;padding:60px 20px}
+.empty-ic{font-size:52px;margin-bottom:14px}
+.empty h3{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;margin-bottom:8px}
+.empty p{color:var(--muted);margin-bottom:22px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Exam<span>Portal</span></div>
+  <div style="display:flex;gap:10px">
+    <a href="/exam.html" class="btn btn-g">← Back to Exams</a>
+    <button class="btn btn-g" onclick="logout()">Logout</button>
+  </div>
+</header>
+<div class="page">
+  <div class="ptitle">My Results</div>
+  <div class="psub">Your exam history and performance overview</div>
+  <div class="summary">
+    <div class="sc"><div class="slabel">Exams Taken</div><div class="sval" id="stTaken">—</div></div>
+    <div class="sc"><div class="slabel">Average Score</div><div class="sval" id="stAvg">—</div></div>
+    <div class="sc"><div class="slabel">Pass Rate</div><div class="sval" id="stPass">—</div></div>
+  </div>
+  <div class="card" id="rCard">
+    <div id="rContent" style="color:var(--muted);text-align:center;padding:28px">Loading...</div>
+  </div>
+</div>
+<script>
+const API='';
+const token=localStorage.getItem('token');
+const user=JSON.parse(localStorage.getItem('user')||'{}');
+if(!token)window.location.href='/login.html';
+const H={'Content-Type':'application/json','Authorization':'Bearer '+token};
+function logout(){localStorage.clear();window.location.href='/login.html'}
+function grade(p){if(p>=90)return'A+';if(p>=80)return'A';if(p>=70)return'B';if(p>=60)return'C';if(p>=50)return'D';return'F'}
+
+async function load(){
+  const r=await fetch(`${API}/api/results/my`,{headers:H});
+  const d=await r.json();
+  const results=d.data||[];
+  document.getElementById('stTaken').textContent=results.length;
+  if(results.length){
+    const avg=results.reduce((s,r)=>s+parseFloat(r.percentage),0)/results.length;
+    const passed=results.filter(r=>r.passed).length;
+    document.getElementById('stAvg').textContent=avg.toFixed(1)+'%';
+    document.getElementById('stPass').textContent=Math.round(passed/results.length*100)+'%';
+  }else{document.getElementById('stAvg').textContent='—';document.getElementById('stPass').textContent='—'}
+
+  if(!results.length){
+    document.getElementById('rContent').innerHTML=`
+      <div class="empty">
+        <div class="empty-ic">📋</div>
+        <h3>No results yet</h3>
+        <p>You haven't attempted any exams yet.</p>
+        <a href="/exam.html" class="btn" style="background:var(--accent);color:#fff">Browse Exams →</a>
+      </div>`;return;
+  }
+  document.getElementById('rContent').innerHTML=`
+    <table>
+      <thead><tr><th>Exam</th><th>Score</th><th>Performance</th><th>Grade</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>${results.map(r=>{
+        const pct=parseFloat(r.percentage||0);const p=r.passed;const g=grade(pct);
+        return`<tr>
+          <td><strong>${r.exam_title}</strong><br><span style="color:var(--muted);font-size:11px">${r.duration_mins}min · Pass: ${r.pass_percent}%</span></td>
+          <td style="font-weight:600">${r.score}/${r.total_marks}</td>
+          <td><div class="bar-wrap"><div class="bar"><div class="barf ${p?'p':'f'}" style="width:${pct}%"></div></div><span style="font-size:12px;color:var(--muted);min-width:38px">${pct}%</span></div></td>
+          <td><span class="badge bb">${g}</span></td>
+          <td><span class="badge ${p?'bg':'br'}">${p?'Pass':'Fail'}</span></td>
+          <td style="color:var(--muted)">${new Date(r.submitted_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+        </tr>`}).join('')}
+      </tbody>
+    </table>`;
+}
+load();
+</script>
+</body>
+</html>
